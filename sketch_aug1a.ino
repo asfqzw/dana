@@ -1,8 +1,7 @@
 #include <Adafruit_Fingerprint.h>
 
-#include <SoftwareSerial.h>
-
-SoftwareSerial arduinoSerial(10,11);
+// Use hardware Serial2 on Mega for ESP32 link (RX=17, TX=16)
+#define arduinoSerial Serial2
 
 
 const int ledPins[] = {
