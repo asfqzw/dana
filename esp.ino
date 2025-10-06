@@ -67,6 +67,7 @@ HardwareSerial espSerial(2);
 void setup() {
   Serial.begin(115200);
   espSerial.begin(9600, SERIAL_8N1, 27, 26); // RX=27, TX=26
+  espSerial.setTimeout(50);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -88,11 +89,7 @@ void setup() {
 }
 
 void loop() {
-  static unsigned long lastReadTime = 0;
-  if (millis() - lastReadTime >= 5000) {
-    receivearduinocomm();
-    lastReadTime = millis();
-  }
+  receivearduinocomm();
 
   app.loop();
   // Check if authentication is ready
@@ -209,7 +206,7 @@ void receivearduinocomm(){
 
 void sendarduinocomm(){
   espSerial.println("Led#" + LedArduino + " Fan#" + FanArduino + " Relay#" + Relay);
-  delay(100);
+  delay(50);
 }
 
 void processData(AsyncResult &aResult) {

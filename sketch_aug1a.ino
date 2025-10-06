@@ -1,8 +1,7 @@
 #include <Adafruit_Fingerprint.h>
 
-#include <SoftwareSerial.h>
-
-SoftwareSerial arduinoSerial(10,11);
+// Use hardware Serial2 on Mega for ESP32 link (RX=17, TX=16)
+#define arduinoSerial Serial2
 
 
 const int ledPins[] = {
@@ -228,6 +227,7 @@ void setup() {
 
   Serial.begin(115200);
   arduinoSerial.begin(9600);
+  arduinoSerial.setTimeout(50);
   delay(2000);
   setPins();
 }
@@ -366,7 +366,7 @@ void sendesp32comm(){
   String EspSendIR = EspIR[0] + EspIR[1] + EspIR[2] + EspIR[3]; 
   String EspSendSmoke = EspSmoke[0] + EspSmoke[1] + EspSmoke[2];
 
-  arduinoSerial.print("IR#" + EspSendIR + " Smoke#" + EspSendSmoke + " Gas#" + String(Gas));
+  arduinoSerial.println("IR#" + EspSendIR + " Smoke#" + EspSendSmoke + " Gas#" + String(Gas));
   delay(100);
 }
 
@@ -374,6 +374,10 @@ void sendesp32comm(){
 void receiveesp32comm(){
 
   if (arduinoSerial.available()) {
+    int firstChar = arduinoSerial.peek();
+    if (firstChar == 'e' || firstChar == 'E') {
+      return; // let fingerprint() handle commands like e-<id>
+    }
     String received = arduinoSerial.readStringUntil('\n');
     received.trim();
     Serial.println("Arduino received: " + received);
@@ -426,6 +430,10 @@ void receiveesp32comm(){
 
 void fingerprint(){
   if (arduinoSerial.available()) {
+    int firstChar = arduinoSerial.peek();
+    if (firstChar != 'e' && firstChar != 'E') {
+      return; // ignore non-fingerprint commands on this channel
+    }
     String received = arduinoSerial.readStringUntil('\n');
     received.trim();  // Remove newline and extra spaces
     int separatorIndex = received.indexOf('-');
